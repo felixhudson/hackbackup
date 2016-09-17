@@ -14,14 +14,38 @@ func printbytes(data []byte, length int) {
 	}
 }
 
+// Return servername and the directory
+func config(filename string) (string, string) {
+	var n int
+	file, err := os.Open("hack.yml")
+	fmt.Println(err)
+	buff := make([]byte, 128)
+	file.Close()
+
+	n, err = file.Read(buff)
+	for i := 0; i < n; i++ {
+		if buff[i] == 66 {
+			fmt.Println("error")
+		}
+
+	}
+
+	return "1.2.3.4", "/home/user"
+
+}
+
 func main() {
 	// open a yml file!
 	// test line zzxxyy
 
-	// open a normal file
 	file, err := os.Open("hack.yml")
 	fmt.Println(err)
 	buff := make([]byte, 128)
+	file.Close()
+
+	// open a normal file
+	file, err = os.Open("hack.yml")
+	fmt.Println(err)
 	var n int
 	n, err = file.Read(buff)
 	fmt.Println(n)
