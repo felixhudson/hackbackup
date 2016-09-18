@@ -14,10 +14,10 @@ type HackFile struct {
 }
 
 type Config struct {
-	server string
-	data   struct {
-		name string
-		dir  string
+	Desc   string
+	Server struct {
+		Name string
+		Dir  string
 	}
 }
 
@@ -31,17 +31,37 @@ func printbytes(data []byte, length int) {
 func loadyml(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("error")
+		fmt.Println("error couldnt read file", filename)
 	}
 
 	buff := make([]byte, 128)
-	file.Close()
+
 	var config Config
 	var n int
 	n, err = file.Read(buff)
-	fmt.Println(n)
-	yaml.Unmarshal(buff, &config)
-	fmt.Println(config)
+	file.Close()
+	//printbytes(buff, n)
+	if n > 1 {
+		yaml.Unmarshal(buff, &config)
+		fmt.Printf("dump of config %v\n", config)
+		//fmt.Println(config.Desc)
+		//fmt.Println(config)
+	}
+	var data = `
+desc: test
+server: t2
+name: t3
+dir: path/to/file 
+`
+	yaml.Unmarshal([]byte(data), &config)
+	fmt.Printf("dump of config %v\n", config)
+	printbytes(buff, 48)
+	printbytes([]byte(data), 49)
+	config.Desc = "example"
+	config.Server.Name = "exname"
+	config.Server.Dir = "edir"
+	d, err := yaml.Marshal(&config)
+	fmt.Println(string(d))
 
 }
 
@@ -105,9 +125,9 @@ func main() {
 	fmt.Println(server, dir)
 
 	// look at that dir and list file names and dates
-	file_list := get_files(dir)
-	fmt.Println(file_list)
+	//file_list := get_files(dir)
+	//fmt.Println(file_list)
 	//printbytes(buff, n)
-	loadyml("hack.yml")
+	loadyml("./hack.yml")
 	fmt.Println("vim-go")
 }
