@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	// "gopkg.in/yaml"
+	"gopkg.in/yaml.v2"
 	//"io"
 	"os"
 	"time"
@@ -13,11 +13,36 @@ type HackFile struct {
 	modified time.Time
 }
 
+type Config struct {
+	server string
+	data   struct {
+		name string
+		dir  string
+	}
+}
+
 func printbytes(data []byte, length int) {
 	for i := 0; i <= length; i++ {
 		//convert and print byte to ascii
 		fmt.Print(fmt.Sprintf("%c", data[i]))
 	}
+}
+
+func loadyml(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("error")
+	}
+
+	buff := make([]byte, 128)
+	file.Close()
+	var config Config
+	var n int
+	n, err = file.Read(buff)
+	fmt.Println(n)
+	yaml.Unmarshal(buff, &config)
+	fmt.Println(config)
+
 }
 
 // Return servername and the directory
@@ -83,5 +108,6 @@ func main() {
 	file_list := get_files(dir)
 	fmt.Println(file_list)
 	//printbytes(buff, n)
+	loadyml("hack.yml")
 	fmt.Println("vim-go")
 }
