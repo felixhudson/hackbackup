@@ -21,6 +21,12 @@ type Config struct {
 	}
 }
 
+type TestConfig struct {
+	Server string
+	Name string
+	Dir  string
+}
+
 func printbytes(data []byte, length int) {
 	for i := 0; i <= length; i++ {
 		//convert and print byte to ascii
@@ -28,7 +34,8 @@ func printbytes(data []byte, length int) {
 	}
 }
 
-func loadyml(filename string) {
+func loadyml(filename string) (string, string) {
+
 	dir_err := os.Chdir("C:\\Users\\Felix\\programing\\go\\src\\github.com\\user\\hackbackup\\")
 	if dir_err != nil {
 		fmt.Println(dir_err)
@@ -36,12 +43,12 @@ func loadyml(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("error couldnt open file", filename)
-		return
+		return "", ""
 	}
 
-	buff := make([]byte, 128)
+	buff := make([]byte, 64)
 
-	var config Config
+	var config TestConfig
 	var n int
 	n, err = file.Read(buff)
 	if err != nil {
@@ -50,9 +57,13 @@ func loadyml(filename string) {
 	file.Close()
 
 	if n > 1 {
-		yaml.Unmarshal(buff, &config)
+		err_yml:= yaml.Unmarshal(buff, &config)
+		if err_yml != nil {
+			fmt.Println("couldnt do the yml" , err_yml)
+		}
 	}
 	fmt.Print(config)
+	return "server.name.tld", "C:\\Users\\Felix"
 
 }
 
@@ -83,18 +94,20 @@ dir: path/to/file
 // Return servername and the directory
 func get_config(filename string) (string, string) {
 	var n int
-	file, err := os.Open("hack.yml")
-	fmt.Println(err)
-	buff := make([]byte, 128)
-	file.Close()
-
-	n, err = file.Read(buff)
-	for i := 0; i < n; i++ {
-		if buff[i] == 66 {
-			fmt.Println("error")
+	dir_err := os.Chdir("C:\\Users\\Felix\\programing\\go\\src\\github.com\\user\\hackbackup\\")
+	if dir_err != nil {
+		file, err := os.Open("hack.yml")
+		fmt.Println(err)
+		buff := make([]byte, 128)
+		file.Close()
+		n, err = file.Read(buff)
+		for i := 0; i < n; i++ {
+			if buff[i] == 66 {
+				fmt.Println("error")
+			}
 		}
 	}
-	return "1.2.3.4", "C:\\User\\felix"
+	return "1.2.3.4", "C:\\User\\Felix"
 }
 
 func get_files(dir string) []HackFile {
@@ -140,9 +153,10 @@ func main() {
 	fmt.Println(server, dir)
 
 	// look at that dir and list file names and dates
-	//file_list := get_files(dir)
-	//fmt.Println(file_list)
 	//printbytes(buff, n)
-	loadyml("hack.yml")
+	server, dir = loadyml("hack.yml")
+	file_list := get_files(dir)
+	fmt.Println(file_list)
+
 	fmt.Println("vim-go")
 }
