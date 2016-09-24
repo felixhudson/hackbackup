@@ -29,9 +29,14 @@ func printbytes(data []byte, length int) {
 }
 
 func loadyml(filename string) {
+	dir_err := os.Chdir("C:\\Users\\Felix\\programing\\go\\src\\github.com\\user\\hackbackup\\")
+	if dir_err != nil {
+		fmt.Println(dir_err)
+	}
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("error couldnt read file", filename)
+		fmt.Println("error couldnt open file", filename)
+		return
 	}
 
 	buff := make([]byte, 128)
@@ -39,14 +44,20 @@ func loadyml(filename string) {
 	var config Config
 	var n int
 	n, err = file.Read(buff)
+	if err != nil {
+		fmt.Println("error reading the file")
+	}
 	file.Close()
-	//printbytes(buff, n)
+
 	if n > 1 {
 		yaml.Unmarshal(buff, &config)
-		fmt.Printf("dump of config %v\n", config)
-		//fmt.Println(config.Desc)
-		//fmt.Println(config)
 	}
+	fmt.Print(config)
+
+}
+
+func test_yaml() {
+	var config Config
 	var data = `
 desc: test
 server: t2
@@ -55,12 +66,16 @@ dir: path/to/file
 `
 	yaml.Unmarshal([]byte(data), &config)
 	fmt.Printf("dump of config %v\n", config)
-	printbytes(buff, 48)
 	printbytes([]byte(data), 49)
+	// create an object and save it
 	config.Desc = "example"
 	config.Server.Name = "exname"
 	config.Server.Dir = "edir"
 	d, err := yaml.Marshal(&config)
+	if err != nil {
+		fmt.Printf("%v", err)
+
+	}
 	fmt.Println(string(d))
 
 }
@@ -128,6 +143,6 @@ func main() {
 	//file_list := get_files(dir)
 	//fmt.Println(file_list)
 	//printbytes(buff, n)
-	loadyml("./hack.yml")
+	loadyml("hack.yml")
 	fmt.Println("vim-go")
 }
