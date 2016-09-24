@@ -1,3 +1,4 @@
-server:
+desc: sname
+  server: notblank
   name: felix
-  dir : "c:/User/"
+  dir: c:/User/
