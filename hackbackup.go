@@ -6,6 +6,7 @@ import (
 	//"io"
 	"os"
 	"time"
+	"crypto/md5"
 )
 
 type HackFile struct {
@@ -25,6 +26,13 @@ type TestConfig struct {
 	Server string
 	Name string
 	Dir  string
+}
+
+func testmd5() {
+	buff := []byte("abcdefg")
+	//printhex(checksum)
+	fmt.Printf("%x", md5.Sum(buff))
+
 }
 
 func printbytes(data []byte, length int) {
@@ -157,6 +165,5 @@ func main() {
 	server, dir = loadyml("hack.yml")
 	file_list := get_files(dir)
 	fmt.Println(file_list)
-
-	fmt.Println("vim-go")
+	testmd5()
 }
