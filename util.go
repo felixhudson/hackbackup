@@ -6,7 +6,6 @@ import (
 		"io/ioutil"
 		"strings"
 		"fmt"
-
 	)
 
 type Hackfile struct {
@@ -30,56 +29,54 @@ func make_tree(files []Hackfile) string {
   return files[0].path
 }
 
+func foo() {
+	fmt.Println("ignore the fmt import")
+}
+
 func compare_file_elements(base []byte, compare []byte) []string{
 	// we assume both files are sorted
 	// compare the first element of each file.
 	// 
-	lines1 := strings.Split(string(base), "\n")
-	lines2 := strings.Split(string(compare), "\n")
-	d1 := strings.Split(lines1[0], " ")
-	d2 := strings.Split(lines2[0], " ")
-	//current := 0
-	//fmt.Println(base)
-	//fmt.Println(lines1)
-	//fmt.Println(lines1[0])
-	//fmt.Println(d1)
-	//fmt.Println(d1[0])
-	//fmt.Println(d1[1])
-	//fmt.Println("---")
+	var lines1, lines2 []string
+	var d1,d2 []string
+	end := len(lines2) + 1
+	current := 0
+	counter := 0
 
-	// grab first value in each
-	// if the compare value is lower, it means that its a new value
-	// if they are the same, then increment both pointers
-	// always increment the lower one
+	lines1 = strings.Split(string(base), "\n")
+	lines2 = strings.Split(string(compare), "\n")
+  result  := make([]string,0)
+	for current <= end{
+		d1 = strings.Split(lines1[counter], " ")
+		d2 = strings.Split(lines2[current], " ")
+		// grab first value in each
+		// if the compare value is lower, it means that its a new value
+		// if they are the same, then increment both pointers
+		// always increment the lower one
 
-	if d1[0] != d2[0] {
-		return []string{string(d2[0])}
-	}
-	//fmt.Println("2---")
-	d1 = strings.Split(lines1[1], " ")
-	d2 = strings.Split(lines2[1], " ")
-	//fmt.Println(d1, d1[0], "::")
-	//fmt.Println(d2, d2[0], "::")
+		if d2[0] == "" {
+			//result = append(result, "")
+		}
+		if d1[0] == "" {
+			result = append(result, d2[0])
+			current++
+			continue
+		}
 
-	if d2[0] == "" {
-		return []string{""}
-	}
-	if d1[0] == "" {
-		return []string{d2[0]}
-	}
-
-	// the compare list is different
-	if d1[0] != d2[0] {
-		if d1[0] > d2[0] {
-			return []string{d2[0]}
-		}else{
-			return []string{d1[0]}
+		// the compare list is different
+		if d1[0] != d2[0] {
+			if d1[0] > d2[0] {
+			  result = append(result, d2[0])
+				current ++
+				//return []string{d2[0]}
+			}else{
+				//return []string{d1[0]}
+			}
+		} else {
+			counter ++
+			current ++
 		}
 	}
-
-	fmt.Println("fell through to bottom")
-	result := []string {"one", "two"}
-  //return []string("one", "two")
 	return result
 }
 
