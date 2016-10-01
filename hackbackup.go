@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gopkg.in/yaml.v2"
-	//"io"
 	"os"
 	"time"
 	"crypto/md5"
@@ -157,13 +156,17 @@ func get_files(dir string) []HackFile {
 func main() {
 	// open a yml file!
 
-	server, dir := get_config("hack.yml")
-	fmt.Println(server, dir)
+	//server, dir := get_config("hack.yml")
+	//fmt.Println(server, dir)
 
 	// look at that dir and list file names and dates
 	//printbytes(buff, n)
-	server, dir = loadyml("hack.yml")
-	file_list := get_files(dir)
-	fmt.Println(file_list)
-	testmd5()
+	//server, dir = loadyml("hack.yml")
+	//file_list := get_files(dir)
+	//fmt.Println(file_list)
+
+	//testmd5()
+
+	fmt.Println("testing the filecompare bit")
+	run_compare("hash_path1","hash_path2")
 }
