@@ -1,0 +1,69 @@
+Goals
+Backup files to another server on network
+Support windows and raspbery pi
+Only sends files which have changes (modified date)
+restore a single file or directory at a time
+server can remove backup snapshots without having to do long waits
+
+Optional
+Encypted
+Multiple destinations
+Priority directories
+
+Overview
+Client and a server (same binary?)
+single config file
+Not sure how to schedule it yet... cron? windows scheduler?
+
+Data types
+
+- File
+- StoredFile
+- Backupset
+- Serverset
+- Config (stores data read from config file)
+
+Files need to have
+* path
+* modified date
+* size
+* permissions (later)
+
+StoredFile
+* storage hash (this will be different per file per backup)
+
+Backupset
+This is a list of all the files from one backup session
+Its a list of Files, sorted in the order of path to make path walking simple when performing a backup
+
+ServerSet
+This is two lists of backuped files
+both sorted in order of storage hash. This will allow easy comparison of backupsets
+we also store the most recent backup of that hash, which will allow for old files to be pruned
+
+Actions on types
+File
+* Get Path, size, modified date
+* Send File 
+
+StoredFile
+* calculate hash
+* store load delete
+
+BackupSet
+* create set
+* compare set
+* walk set (generates a list of files to send one at a time)
+
+ServerSet
+* initialise set
+* update set
+* compare old set
+
+OtherServer actions
+* insert file
+* remove file
+* report size
+* store FileSet
+* list FileSets
+

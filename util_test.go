@@ -57,7 +57,9 @@ func assert_equal(t *testing.T, expected string, data string) {
 
 func Test_create_fileset(t *testing.T) {
 	var mock_dirlist []HackFile
-	mock_dirlist = discover_files("/")
+	mock_dirlist = append(mock_dirlist, HackFile{"foo", "p", time.Now(), 1000, "ab34"})
+	mock_dirlist = append(mock_dirlist, HackFile{"bar", "p", time.Now(), 1000, "ab34"})
+	mock_dirlist = append(mock_dirlist, HackFile{"foo", "/q", time.Now(), 1000, "ab34"})
 	compare := string(mock_dirlist[0].name)
-  assert_equal(t, "one",string(mock_dirlist[0]))
+  assert_equal(t, "foo",compare)
 }
