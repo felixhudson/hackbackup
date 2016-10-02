@@ -9,8 +9,11 @@ import (
 )
 
 type HackFile struct {
-	name     string
+	name string
+	path string
 	modified time.Time
+	size int
+	hash string
 }
 
 type Config struct {

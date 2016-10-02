@@ -1,6 +1,7 @@
 package main
 import "testing"
 import "fmt"
+import "time"
 
 func Test_compare_file_elements(t *testing.T) {
 	a := []byte("1234 bar\n1345 foo\n")
@@ -21,7 +22,6 @@ func Test_compare_file_elements2(t *testing.T) {
 	if data[0] != expected {
 		fmt.Printf("Expected %s, got %s ::\n)" , expected, data[0])
 		t.Error()
-
 	}
 }
 
@@ -47,4 +47,17 @@ func Test_compare_file_many(t *testing.T) {
 		t.Error()
 
 	}
+}
+func assert_equal(t *testing.T, expected string, data string) {
+	if data != expected {
+		fmt.Printf("Expected '%s', got '%s'\n)" , expected, data)
+		t.Error()
+	}
+}
+
+func Test_create_fileset(t *testing.T) {
+	var mock_dirlist []HackFile
+	mock_dirlist = discover_files("/")
+	compare := string(mock_dirlist[0].name)
+  assert_equal(t, "one",string(mock_dirlist[0]))
 }

@@ -6,26 +6,23 @@ import (
 		"io/ioutil"
 		"strings"
 		"fmt"
+		"time"
 	)
 
-type Hackfile struct {
-	path string
-	modified string
-	hash string
-}
-
-func (h *Hackfile) generate_hash() string{
+func (h *HackFile) generate_hash() string{
 	return "123" + h.path
 }
 
-func discover_files(dir string) ([]Hackfile) {
-	result := make([]Hackfile, 2)
-	result = append(result, Hackfile{"p","2016/1/1","a2b6"})
-	result = append(result, Hackfile{"p","2016/2/2","4fb3"})
+// Given a directory, walk it recursively and return a list of Hackfiles
+func discover_files(dir string) []HackFile {
+	result := make([]HackFile, 2)
+	t := time.Now()
+	result = append(result, HackFile{"foo","p",t, 1000, "a2b6"})
+	result = append(result, HackFile{"foo1","p",t, 1000, "4fb3"})
 	return result
 }
 
-func make_tree(files []Hackfile) string {
+func make_tree(files []HackFile) string {
   return files[0].path
 }
 
