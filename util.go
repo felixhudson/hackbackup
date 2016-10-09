@@ -6,11 +6,22 @@ import (
 		"io/ioutil"
 		"strings"
 		"fmt"
+		"sort"
 		"time"
 	)
 
 func (h *HackFile) generate_hash() string{
 	return "123" + h.path
+}
+
+type ByPath []HackFile
+func (a ByPath) Len() int           { return len(a) }
+func (a ByPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByPath) Less(i, j int) bool { return a[i].path < a[j].path }
+
+func (h *HackFile) to_s() string {
+	data := fmt.Sprintf("%s/%s %s %d %s", h.path, h.name, h.modified, h.size, h.hash)
+	return data
 }
 
 // Given a directory, walk it recursively and return a list of Hackfiles
@@ -121,5 +132,31 @@ func make_backup_lists(dir string) {
 
 
 	// lets test walking the two files
-	run_compare("hash_path1","hash_path2")	
+	run_compare("hash_path1","hash_path2")
+	files := discover_files(dir)
+  // save the file as a list of things
+	sort.Sort(ByPath(files))
+	destination := "/tmp/backupset"
+  fd, err := os.Open(destination)
+	if err!= nil {
+		log.Println("Couldnt open file to write backupset")
+		log.Printf("err = %+v\n", err)
+	}
+
+	for _, element := range files {
+		fd.WriteString(element.to_s())
+	}
+	fd.Close()
+
+}
+
+func testable_make_list(files []HackFile) []string {
+	//files := discover_files(dir)
+  // save the file as a list of things
+	sort.Sort(ByPath(files))
+	result := make([]string, 0)
+	for _, element := range files {
+		result = append(result, element.to_s())
+	}
+	return result
 }
