@@ -1,20 +1,23 @@
 package main
 
 import (
-		"log"
-		"os"
-		"io/ioutil"
-		"strings"
-		"fmt"
-		"sort"
-		"time"
-	)
+	"bytes"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"sort"
+	"strings"
+	"time"
+)
 
-func (h *HackFile) generate_hash() string{
+func (h *HackFile) generate_hash() string {
 	return "123" + h.path
 }
 
 type ByPath []HackFile
+
 func (a ByPath) Len() int           { return len(a) }
 func (a ByPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByPath) Less(i, j int) bool { return a[i].path < a[j].path }
@@ -28,33 +31,57 @@ func (h *HackFile) to_s() string {
 func discover_files(dir string) []HackFile {
 	result := make([]HackFile, 2)
 	t := time.Now()
-	result = append(result, HackFile{"foo","p",t, 1000, "a2b6"})
-	result = append(result, HackFile{"foo1","p",t, 1000, "4fb3"})
+	result = append(result, HackFile{"foo", "p", t, 1000, "a2b6"})
+	result = append(result, HackFile{"foo1", "p", t, 1000, "4fb3"})
 	return result
 }
 
 func make_tree(files []HackFile) string {
-  return files[0].path
+	return files[0].path
 }
 
 func foo() {
 	fmt.Println("ignore the fmt import")
 }
 
-func compare_file_elements(base []byte, compare []byte) []string{
+func compare_string_file_elements(base []string, compare []string) ([]string, error)  {
+	newbase := make([]byte, 0)
+	for _, element := range base {
+		newbase = append(newbase, []byte("\n")...)
+		newbase = append(newbase, []byte(element)...)
+	}
+	newcompare := make([]byte, 0)
+	for _, element := range base {
+		newcompare = append(newcompare, []byte("\n")...)
+		newcompare = append(newcompare, []byte(element)...)
+	}
+	result, err := compare_file_elements(newbase, newcompare)
+	if err != nil {
+		// TODO handle this error better
+		//panic("data error")
+		return make([]string, 0), err
+	}
+	return result, nil
+}
+
+func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 	// we assume both files are sorted
 	// compare the first element of each file.
-	// 
+	//
 	var lines1, lines2 []string
-	var d1,d2 []string
+	var d1, d2 []string
 	end := len(lines2) + 1
 	current := 0
 	counter := 0
 
+	if ! (bytes.Contains(base, []byte("\n")) || bytes.Contains(compare, []byte("\n"))) {
+		return make([]string, 0), errors.New("Data is malformed")
+	}
+
 	lines1 = strings.Split(string(base), "\n")
 	lines2 = strings.Split(string(compare), "\n")
-  result  := make([]string,0)
-	for current <= end{
+	result := make([]string, 0)
+	for current <= end {
 		d1 = strings.Split(lines1[counter], " ")
 		d2 = strings.Split(lines2[current], " ")
 		// grab first value in each
@@ -74,38 +101,36 @@ func compare_file_elements(base []byte, compare []byte) []string{
 		// the compare list is different
 		if d1[0] != d2[0] {
 			if d1[0] > d2[0] {
-			  result = append(result, d2[0])
-				current ++
+				result = append(result, d2[0])
+				current++
 				//return []string{d2[0]}
-			}else{
+			} else {
 				//return []string{d1[0]}
 			}
 		} else {
-			counter ++
-			current ++
+			counter++
+			current++
 		}
 	}
-	return result
+	return result, nil
 }
 
 func run_compare(file1 string, file2 string) {
-	f1 , err:= ioutil.ReadFile(file1)
+	f1, err := ioutil.ReadFile(file1)
 	if err != nil {
 		path, _ := os.Getwd()
-		log.Fatal("cant open the file", path, file1 )
+		log.Fatal("cant open the file", path, file1)
 	}
 
-	f2 , err:= ioutil.ReadFile(file2)
+	f2, err := ioutil.ReadFile(file2)
 	if err != nil {
 		log.Fatal("cant open the file")
 	}
 	//buff := make([]byte,50)
 	//n, readerr := f1.Read(buff)
 
-
- compare_file_elements(f1, f2)
- }
-
+	compare_file_elements(f1, f2)
+}
 
 func make_backup(dir string) {
 	// put together a tree of nodes representing the backup
@@ -127,18 +152,17 @@ func make_backup_lists(dir string) {
 	// store them in a file sorted by path
 	// also store them sorted by hash
 	// thus we can tell which files need to be backed up easily
-	// we can also work out which files are not needed. 
+	// we can also work out which files are not needed.
 	// simply walk through each list one at a time, finding missing entries as detected
 
-
 	// lets test walking the two files
-	run_compare("hash_path1","hash_path2")
+	run_compare("hash_path1", "hash_path2")
 	files := discover_files(dir)
-  // save the file as a list of things
+	// save the file as a list of things
 	sort.Sort(ByPath(files))
 	destination := "/tmp/backupset"
-  fd, err := os.Open(destination)
-	if err!= nil {
+	fd, err := os.Open(destination)
+	if err != nil {
 		log.Println("Couldnt open file to write backupset")
 		log.Printf("err = %+v\n", err)
 	}
@@ -152,7 +176,7 @@ func make_backup_lists(dir string) {
 
 func testable_make_list(files []HackFile) []string {
 	//files := discover_files(dir)
-  // save the file as a list of things
+	// save the file as a list of things
 	sort.Sort(ByPath(files))
 	result := make([]string, 0)
 	for _, element := range files {
