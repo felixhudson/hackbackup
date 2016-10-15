@@ -12,8 +12,13 @@ import (
 func Test_compare_string_file_elements(t *testing.T) {
 	base := make([]string, 0)
 	base = append(base, "one")
-	data, _ := compare_string_file_elements(base, base)
-	fmt.Println(data)
+	data, err := compare_string_file_elements(base, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) >0 && data[0] != "" {
+		t.Fatal("data is borked")
+	}
 }
 
 func Test_should_deal_with_bad_data(t *testing.T) {
@@ -121,7 +126,7 @@ func Test_compare_identical(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(target_files) > 0 {
+	if len(target_files) > 0 && target_files[0] != "" {
 		t.Fatal("Error, sets should be the same")
 	}
 }

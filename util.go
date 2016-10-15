@@ -57,8 +57,6 @@ func compare_string_file_elements(base []string, compare []string) ([]string, er
 	}
 	result, err := compare_file_elements(newbase, newcompare)
 	if err != nil {
-		// TODO handle this error better
-		//panic("data error")
 		return make([]string, 0), err
 	}
 	return result, nil
@@ -88,6 +86,20 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 		// if the compare value is lower, it means that its a new value
 		// if they are the same, then increment both pointers
 		// always increment the lower one
+		//log.Printf("d1 = %+v\n", d1)
+		//log.Printf("d2 = %+v\n", d2)
+		//log.Println("---")
+
+		// deal with empty paths
+		if d2[0] == "/" {
+			current ++
+			continue
+		}
+
+		if d1[0] == "/" {
+			counter ++
+			continue
+		}
 
 		if d2[0] == "" {
 			//result = append(result, "")
