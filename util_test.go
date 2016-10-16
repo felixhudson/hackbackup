@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 	"testing"
@@ -16,7 +17,7 @@ func Test_compare_string_file_elements(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(data) >0 && data[0] != "" {
+	if len(data) > 0 && data[0] != "" {
 		t.Fatal("data is borked")
 	}
 }
@@ -24,7 +25,7 @@ func Test_compare_string_file_elements(t *testing.T) {
 func Test_should_deal_with_bad_data(t *testing.T) {
 	a := []byte("1234 bar no newline")
 	b := []byte("1234 bar no newline")
-	if ! bytes.Contains([]byte("1234\n"), []byte("\n")) {
+	if !bytes.Contains([]byte("1234\n"), []byte("\n")) {
 		t.Fatal("Error, compare doesnt work")
 	}
 	_, err := compare_file_elements(a, b)
@@ -129,6 +130,14 @@ func Test_compare_identical(t *testing.T) {
 	if len(target_files) > 0 && target_files[0] != "" {
 		t.Fatal("Error, sets should be the same")
 	}
+
+	// save lists to disk then compare
+	var path string
+	path, err = save_backupset_disk(files)
+	if err != nil {
+	  log.Printf("path = %+v\n", path)
+		t.Fatal(err)
+	}
 }
 
 func Test_sort_list(t *testing.T) {
@@ -143,5 +152,13 @@ func Test_sort_list(t *testing.T) {
 		fmt.Printf("compare = %+v\n", compare)
 		fmt.Printf("mock_dirlist = %+v\n", mock_dirlist)
 		t.Error("didnt sort")
+	}
+}
+
+func Test_make_filename(t *testing.T) {
+	data := make_filename()
+	if len(data) != 28 {
+		t.Log(len(data))
+		t.Fatal("problem with the date generator")
 	}
 }

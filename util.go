@@ -40,11 +40,7 @@ func make_tree(files []HackFile) string {
 	return files[0].path
 }
 
-func foo() {
-	fmt.Println("ignore the fmt import")
-}
-
-func compare_string_file_elements(base []string, compare []string) ([]string, error)  {
+func compare_string_file_elements(base []string, compare []string) ([]string, error) {
 	newbase := make([]byte, 0)
 	for _, element := range base {
 		newbase = append(newbase, []byte("\n")...)
@@ -72,7 +68,7 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 	current := 0
 	counter := 0
 
-	if ! (bytes.Contains(base, []byte("\n")) || bytes.Contains(compare, []byte("\n"))) {
+	if !(bytes.Contains(base, []byte("\n")) || bytes.Contains(compare, []byte("\n"))) {
 		return make([]string, 0), errors.New("Data is malformed")
 	}
 
@@ -92,12 +88,12 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 
 		// deal with empty paths
 		if d2[0] == "/" {
-			current ++
+			current++
 			continue
 		}
 
 		if d1[0] == "/" {
-			counter ++
+			counter++
 			continue
 		}
 
@@ -195,4 +191,35 @@ func testable_make_list(files []HackFile) []string {
 		result = append(result, element.to_s())
 	}
 	return result
+}
+
+
+func make_filename() string {
+	date := time.Now()
+	sdate := "hackbackup-" + date.Format("2006-01-02-150405")
+	return sdate
+}
+
+func save_backupset_disk(backupset []HackFile) (string, error) {
+	filedata := testable_make_list(backupset)
+
+	path := "/Users/Felix/" + make_filename()
+	//path = "/Users/Felix/test"
+	file, err := os.Create(path)
+	if err != nil {
+		log.Printf("path = %+v\n", path)
+		log.Println("Couldnt Open file for storage")
+		log.Printf("err = %+v\n", err)
+		return "", err
+	}
+
+	for _, element := range(filedata) {
+		n, writeerr := file.WriteString(element)
+		if writeerr != nil || n == 0{
+			log.Println("Couldnt write backupset to disk")
+			return "", err
+		}
+	}
+
+	return "path", nil
 }
