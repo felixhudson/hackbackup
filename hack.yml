@@ -1,4 +1,4 @@
 desc: sname
-  server: notblank
+server:
   name: felix
-  dir: c:/User/
+  dir: /path
