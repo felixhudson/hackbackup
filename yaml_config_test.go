@@ -23,12 +23,21 @@ func Test_simple_yaml(t *testing.T) {
 	example.Desc = "foo"
 
 	buff, err_yaml := yaml.Marshal(example)
-	fmt.Printf("err_yaml = %+v\n", err_yaml)
-	fmt.Printf("buff = %+v\n", buff)
+	if err_yaml != nil {
+		fmt.Printf("err_yaml = %+v\n", err_yaml)
+		t.Fatal(err_yaml)
+	}
 
 	err := yaml.Unmarshal(buff, &config)
-	fmt.Printf("err = %+v\n", err)
-	fmt.Printf("config = %+v\n", config)
+	if err != nil {
+		fmt.Printf("err = %+v\n", err)
+		t.Fatal(err)
+	}
+	if config.Desc != "foo" {
+		fmt.Printf("buff = %+v\n", buff)
+		fmt.Printf("config = %+v\n", config)
+		t.Fatalf("test config and config dont match")
+	}
 	// yaml.Unmarshal([]byte("a: 1\nb: 2"), &t)
 }
 
@@ -40,12 +49,21 @@ func Test_nested(t *testing.T) {
 	example.Location.Path = "path"
 
 	buff, err_yaml := yaml.Marshal(example)
-	fmt.Printf("err_yaml = %+v\n", err_yaml)
-	fmt.Printf("buff = %+v\n", buff)
+	if err_yaml != nil {
+		fmt.Printf("err_yaml = %+v\n", err_yaml)
+		t.Fatal(err_yaml)
+	}
 
 	err := yaml.Unmarshal(buff, &config)
-	fmt.Printf("err = %+v\n", err)
-	fmt.Printf("config = %+v\n", config)
+	if err != nil {
+		fmt.Printf("err = %+v\n", err)
+		t.Fatal(err)
+	}
+	if config.Location.Path != "path" {
+		fmt.Printf("buff = %+v\n", buff)
+		fmt.Printf("config = %+v\n", config)
+		t.Fatalf("test config and config dont match")
+	}
 }
 
 func Test_config(t *testing.T) {
@@ -56,24 +74,37 @@ func Test_config(t *testing.T) {
 	example.Server.Dir = "/path"
 
 	buff, err_yaml := yaml.Marshal(example)
-	fmt.Printf("err_yaml = %+v\n", err_yaml)
-	fmt.Printf("buff = %+v\n", buff)
-	fmt.Println("what is the buffer like")
-	fmt.Println(string(buff[:]))
+	if err_yaml != nil {
+		fmt.Printf("err_yaml = %+v\n", err_yaml)
+	}
+	if len(buff) != 47 {
+		fmt.Printf("buff = %+v\n", buff)
+		fmt.Println("what is the buffer like")
+		fmt.Println(string(buff[:]))
+		fmt.Println("length", len(buff))
+		t.Fatalf("buffer with config is not complete")
+	}
 
 	err := yaml.Unmarshal(buff, &config)
-	fmt.Printf("err = %+v\n", err)
-	fmt.Printf("config = %+v\n", config)
+	if err != nil {
+		t.Fatal(err)
+		fmt.Printf("err = %+v\n", err)
+		fmt.Printf("config = %+v\n", config)
+	}
 
 }
 
 func Test_read_config(t *testing.T) {
 	filename := "hack.yml"
+	fileinfo, fileinfoerr := os.Stat(filename)
+	if fileinfoerr != nil {
+		t.Fatal(fileinfoerr)
+	}
 	file, err := os.Open(filename)
 	if err != nil {
 		t.Fatalf("couldnt open config file")
 	}
-	buff := make([]byte, 51)
+	buff := make([]byte, fileinfo.Size())
 
 	var config Config
 	var n int
