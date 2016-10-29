@@ -17,6 +17,9 @@ type HackFile struct {
 	size     int
 	hash     string
 }
+type ConfigLoc struct {
+	Dir string
+}
 
 type Config struct {
 	Desc   string
@@ -24,6 +27,7 @@ type Config struct {
 		Name string
 		Dir  string
 	}
+	Locations []ConfigLoc
 }
 
 func testmd5() {
@@ -171,5 +175,32 @@ func main() {
 	}
 	compare := testable_make_list(backup_set)
 	compare_list := testable_make_list(file_list)
-	compare_string_file_elements(compare, compare_list)
+	result, err := compare_string_file_elements(compare, compare_list)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("result = %+v\n", result)
+
+	// test connect to server
+
+	// hash paths and names and sizes
+
+	// (encrypt) send files
+
+	// save backupset to disk
+
+}
+
+func server() {
+	// initalise
+
+	// open sockets
+
+	// wait
+
+	// receieve backupset
+	// detect full disk
+	// loop recieve files
+	// calculate and update backupsets
+
 }

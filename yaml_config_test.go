@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -72,12 +73,14 @@ func Test_config(t *testing.T) {
 	example.Desc = "sname"
 	example.Server.Name = "felix"
 	example.Server.Dir = "/path"
+	example.Locations = make([]ConfigLoc, 0)
+	example.Locations = append(example.Locations, ConfigLoc{"tmp"})
 
 	buff, err_yaml := yaml.Marshal(example)
 	if err_yaml != nil {
 		fmt.Printf("err_yaml = %+v\n", err_yaml)
 	}
-	if len(buff) != 47 {
+	if !bytes.Contains(buff, []byte("felix")) { 
 		fmt.Printf("buff = %+v\n", buff)
 		fmt.Println("what is the buffer like")
 		fmt.Println(string(buff[:]))
