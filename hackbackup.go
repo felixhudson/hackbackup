@@ -1,19 +1,21 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
-	"gopkg.in/yaml.v2"
+	"log"
 	"os"
 	"time"
-	"crypto/md5"
+
+	"gopkg.in/yaml.v2"
 )
 
 type HackFile struct {
-	name string
-	path string
+	name     string
+	path     string
 	modified time.Time
-	size int
-	hash string
+	size     int
+	hash     string
 }
 
 type Config struct {
@@ -22,12 +24,6 @@ type Config struct {
 		Name string
 		Dir  string
 	}
-}
-
-type TestConfig struct {
-	Server string
-	Name string
-	Dir  string
 }
 
 func testmd5() {
@@ -44,21 +40,27 @@ func printbytes(data []byte, length int) {
 	}
 }
 
-func loadyml(filename string) (string, string) {
+func loadyml(filename string) (Config, error) {
+	var config Config
 
 	dir_err := os.Chdir("C:\\Users\\Felix\\programing\\go\\src\\github.com\\user\\hackbackup\\")
 	if dir_err != nil {
 		fmt.Println(dir_err)
 	}
+	fileinfo, fileinfoerr := os.Stat(filename)
+
+	if fileinfoerr != nil {
+		fmt.Println("error couldnt get file info", filename)
+		return config, fileinfoerr
+	}
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("error couldnt open file", filename)
-		return "", ""
+		return config, err
 	}
 
-	buff := make([]byte, 64)
+	buff := make([]byte, fileinfo.Size())
 
-	var config TestConfig
 	var n int
 	n, err = file.Read(buff)
 	if err != nil {
@@ -67,14 +69,13 @@ func loadyml(filename string) (string, string) {
 	file.Close()
 
 	if n > 1 {
-		err_yml:= yaml.Unmarshal(buff, &config)
+		err_yml := yaml.Unmarshal(buff, &config)
 		if err_yml != nil {
-			fmt.Println("couldnt do the yml" , err_yml)
+			fmt.Println("couldnt do the yml", err_yml)
 		}
 	}
-	fmt.Print(config)
-	return "server.name.tld", "C:\\Users\\Felix"
-
+	//fmt.Print(config)
+	return config, nil
 }
 
 func test_yaml() {
@@ -106,9 +107,16 @@ func get_config(filename string) (string, string) {
 	var n int
 	dir_err := os.Chdir("C:\\Users\\Felix\\programing\\go\\src\\github.com\\user\\hackbackup\\")
 	if dir_err != nil {
+		fileinfo, fileinfoerr := os.Stat(filename)
+
+		if fileinfoerr != nil {
+			fmt.Println("error couldnt get file info", filename)
+			return "", ""
+
+		}
 		file, err := os.Open("hack.yml")
 		fmt.Println(err)
-		buff := make([]byte, 128)
+		buff := make([]byte, fileinfo.Size())
 		file.Close()
 		n, err = file.Read(buff)
 		for i := 0; i < n; i++ {
@@ -120,14 +128,14 @@ func get_config(filename string) (string, string) {
 	return "1.2.3.4", "C:\\User\\Felix"
 }
 
-func get_files(dir string) []HackFile {
+func get_files(dir string) ([]HackFile , error) {
 	result := make([]HackFile, 0)
 	var hfile HackFile
 
 	// look at a dir and get data
 	dirdata, err := os.Open("C:\\Users\\felix")
-	fmt.Println(err)
 	if err != nil {
+		fmt.Println(err)
 		fmt.Println("couldnt read directory")
 	}
 	ls, err := dirdata.Readdir(0)
@@ -143,17 +151,21 @@ func get_files(dir string) []HackFile {
 		result = append(result, hfile)
 	}
 	// find all directories in this dir
-	fmt.Println(os.ModeDir)
+	//fmt.Println(os.ModeDir)
 	for i := 0; i < len(ls); i++ {
 		if ls[i].Mode().IsDir() {
-			fmt.Println(ls[i].Name(), "%s is a directory ")
+			//fmt.Println(ls[i].Name(), "%s is a directory ")
 		}
 	}
 
 	hfile.name = "filename"
 	hfile.modified = time.Now()
 	result = append(result, hfile)
-	return result
+	return result, nil
+}
+func get_recent_backup() ([]HackFile, error) {
+	return make([]HackFile, 1), nil
+
 }
 
 func main() {
@@ -164,12 +176,24 @@ func main() {
 
 	// look at that dir and list file names and dates
 	//printbytes(buff, n)
-	//server, dir = loadyml("hack.yml")
-	//file_list := get_files(dir)
-	//fmt.Println(file_list)
-
-	//testmd5()
-
-	fmt.Println("testing the filecompare bit")
-	run_compare("hash_path1","hash_path2")
+	config, err := loadyml("hack.yml")
+	if err != nil {
+		log.Println("Couldnt load config")
+		log.Println("err")
+		panic("Couldnt load config")
+	}
+	log.Printf("config = %+v\n", config)
+	file_list, err := get_files(config.Server.Dir)
+	if err != nil {
+		panic("counldnt get file list")
+	}
+	// open current file list
+	backup_set, errlist := get_recent_backup()
+	if errlist != nil {
+		panic("couldnt get recent backup")
+	}
+	
+	compare := testable_make_list(backup_set)
+	compare_list := testable_make_list(file_list)
+	compare_string_file_elements(compare, compare_list)
 }
