@@ -214,9 +214,10 @@ func save_backupset_disk(backupset []HackFile) (string, error) {
 	}
 
 	for _, element := range(filedata) {
-		n, writeerr := file.WriteString(element)
-		if writeerr != nil || n == 0{
+		n, err := file.WriteString(element)
+		if err != nil || n == 0{
 			log.Println("Couldnt write backupset to disk")
+			fmt.Println(err)
 			return "", err
 		}
 	}

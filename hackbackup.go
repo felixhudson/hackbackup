@@ -47,11 +47,11 @@ func loadyml(filename string) (Config, error) {
 	if dir_err != nil {
 		fmt.Println(dir_err)
 	}
-	fileinfo, fileinfoerr := os.Stat(filename)
+	fileinfo, err := os.Stat(filename)
 
-	if fileinfoerr != nil {
+	if err != nil {
 		fmt.Println("error couldnt get file info", filename)
-		return config, fileinfoerr
+		return config, err
 	}
 	file, err := os.Open(filename)
 	if err != nil {
@@ -69,38 +69,15 @@ func loadyml(filename string) (Config, error) {
 	file.Close()
 
 	if n > 1 {
-		err_yml := yaml.Unmarshal(buff, &config)
-		if err_yml != nil {
-			fmt.Println("couldnt do the yml", err_yml)
+		err := yaml.Unmarshal(buff, &config)
+		if err != nil {
+			fmt.Println("couldnt do the yml", err)
 		}
 	}
 	//fmt.Print(config)
 	return config, nil
 }
 
-func test_yaml() {
-	var config Config
-	var data = `
-desc: test
-server: t2
-name: t3
-dir: path/to/file 
-`
-	yaml.Unmarshal([]byte(data), &config)
-	fmt.Printf("dump of config %v\n", config)
-	printbytes([]byte(data), 49)
-	// create an object and save it
-	config.Desc = "example"
-	config.Server.Name = "exname"
-	config.Server.Dir = "edir"
-	d, err := yaml.Marshal(&config)
-	if err != nil {
-		fmt.Printf("%v", err)
-
-	}
-	fmt.Println(string(d))
-
-}
 
 // Return servername and the directory
 func get_config(filename string) (string, string) {
@@ -188,11 +165,10 @@ func main() {
 		panic("counldnt get file list")
 	}
 	// open current file list
-	backup_set, errlist := get_recent_backup()
-	if errlist != nil {
+	backup_set, err := get_recent_backup()
+	if err != nil {
 		panic("couldnt get recent backup")
 	}
-	
 	compare := testable_make_list(backup_set)
 	compare_list := testable_make_list(file_list)
 	compare_string_file_elements(compare, compare_list)
