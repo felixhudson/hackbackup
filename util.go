@@ -43,13 +43,13 @@ func make_tree(files []HackFile) string {
 func compare_string_file_elements(base []string, compare []string) ([]string, error) {
 	newbase := make([]byte, 0)
 	for _, element := range base {
-		newbase = append(newbase, []byte("\n")...)
 		newbase = append(newbase, []byte(element)...)
+		newbase = append(newbase, []byte("\n")...)
 	}
 	newcompare := make([]byte, 0)
 	for _, element := range base {
-		newcompare = append(newcompare, []byte("\n")...)
 		newcompare = append(newcompare, []byte(element)...)
+		newcompare = append(newcompare, []byte("\n")...)
 	}
 	result, err := compare_file_elements(newbase, newcompare)
 	if err != nil {
@@ -64,9 +64,9 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 	//
 	var lines1, lines2 []string
 	var d1, d2 []string
-	end := len(lines2) + 1
-	current := 0
+	pos2 := 0
 	counter := 0
+	debug := false
 
 	if !(bytes.Contains(base, []byte("\n")) || bytes.Contains(compare, []byte("\n"))) {
 		return make([]string, 0), errors.New("Data is malformed")
@@ -74,21 +74,49 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 
 	lines1 = strings.Split(string(base), "\n")
 	lines2 = strings.Split(string(compare), "\n")
+	if debug {
+		log.Printf("lines1 = %+v\n", strings.Join(lines1,"\n"))
+		log.Printf("lines2 = %+v\n", strings.Join(lines2,"\n"))
+	}
+	end := len(lines1)
+	end2 := len(lines2)
 	result := make([]string, 0)
-	for current <= end {
+	if debug {
+		log.Println("############")
+	}
+	for (pos2 < end2 - 1){
+		if debug {
+			log.Println("---")
+			log.Printf("counter = %+v\n", counter)
+			log.Printf("pos2 = %+v\n", pos2)
+			log.Printf("end = %+v\n", end)
+			log.Printf("end2 = %+v\n", end2)
+		}
+
+		//if list1 is at end just take d2
+		if counter == end {
+			if debug {
+				log.Println("we are adding d2 as list 1 is at end")
+			}
+			result = append(result, d2[0])
+			pos2++
+			continue
+		}
+
 		d1 = strings.Split(lines1[counter], " ")
-		d2 = strings.Split(lines2[current], " ")
+		d2 = strings.Split(lines2[pos2], " ")
 		// grab first value in each
 		// if the compare value is lower, it means that its a new value
 		// if they are the same, then increment both pointers
 		// always increment the lower one
-		//log.Printf("d1 = %+v\n", d1)
-		//log.Printf("d2 = %+v\n", d2)
-		//log.Println("---")
+		if debug {
+			log.Printf("d1 = %+v\n", d1)
+			log.Printf("d2 = %+v\n", d2)
+		}
 
 		// deal with empty paths
 		if d2[0] == "/" {
-			current++
+			pos2++
 			continue
 		}
 
@@ -98,27 +126,54 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 		}
 
 		if d2[0] == "" {
-			//result = append(result, "")
+			if debug {
+				log.Println("Skipping d2 as it is empty")
+			}
+			pos2++
+			continue
 		}
+
 		if d1[0] == "" {
-			result = append(result, d2[0])
-			current++
+			if debug {
+				log.Println("we are skipping d1 as it is empty")
+			}
+			counter++
 			continue
 		}
 
 		// the compare list is different
 		if d1[0] != d2[0] {
 			if d1[0] > d2[0] {
+				// thus d2 is new and appears in the list before the value of d1
+				if debug {
+					log.Println("we are taking d2 as its not in list1, moving to next value of list2")
+				}
 				result = append(result, d2[0])
-				current++
-				//return []string{d2[0]}
+				pos2++
+				continue
 			} else {
-				//return []string{d1[0]}
+				// thus d2 is new and appeares after the value of d1
+				// so we move d1 to the next value
+				if debug {
+					log.Println("we are skipping d1 as its different but occurs after d2")
+				}
+				counter ++
+				continue
 			}
 		} else {
-			counter++
-			current++
+			if debug {
+				log.Println("paths are the same", counter, pos2)
+			}
+			// only increment the second list
+			pos2++
+			continue
 		}
+		if debug {
+			log.Println("dropped to bottom")
+		}
+	}
+	if debug {
+		log.Println("end of loop compare")
 	}
 	return result, nil
 }

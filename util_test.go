@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"math/rand"
 )
 
 func Test_compare_string_file_elements(t *testing.T) {
@@ -28,22 +29,83 @@ func Test_should_deal_with_bad_data(t *testing.T) {
 	if !bytes.Contains([]byte("1234\n"), []byte("\n")) {
 		t.Fatal("Error, compare doesnt work")
 	}
-	_, err := compare_file_elements(a, b)
+	result, err := compare_file_elements(a, b)
 	// only if we dont get an error do we fail the test
 	if err == nil {
 		t.Fatal(err)
 	}
+	if len(result) > 0 {
+		t.Fatal("Expected no differences")
+	}
+}
+
+func Test_compare_file_strings(t *testing.T) {
+	one := []byte{'a',' ','b',' ','c', '\n'}
+	two := []byte{'a',' ','b',' ','c', '\n'}
+	difference, err := compare_file_elements(one,two)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(difference) != 0 {
+		log.Printf("difference = %+v\n", difference)
+		t.Fatal("Difference expected to be 0, got ", len(difference))
+	}
+	one = []byte{'a',' ','b',' ','c', '\n'}
+	two = []byte{'a',' ','b',' ','c', '\n'}
+	difference, err = compare_file_elements(one,two)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(difference) != 0 {
+		t.Fatal("Difference expected to be 0")
+	}
+}
+func Test_compare_file_elements_simple(t *testing.T) {
+	a := []byte("1234 bar\n")
+	b := []byte("1234 bar\n")
+	data, err := compare_file_elements(a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) != 0 {
+		fmt.Printf("Expected nil data being returned")
+		t.Fatal()
+	}
 }
 
 func Test_compare_file_elements(t *testing.T) {
+	// as file is missing in b it wont be returned!
 	a := []byte("1234 bar\n1345 foo\n")
-	b := []byte("1234 bar \n")
-	data, _ := compare_file_elements(a, b)
-	expected := ""
+	b := []byte("1234 bar\n")
+	data, err := compare_file_elements(a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) != 0 {
+		fmt.Printf("Expected nil data being returned")
+		log.Printf("data = %+v\n", data)
+		t.Fatal()
+	}
+}
+
+func Test_compare_file_elements_new_file(t *testing.T) {
+	// new file in seccond set of files
+	a := []byte("1234 bar\n")
+	b := []byte("1234 bar\n1345 foo\n")
+	data, err := compare_file_elements(a, b)
+	expected := "1345"
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(data) != 1 {
+		log.Println("Expected 1 element being returned")
+		log.Printf("Got = %+v\n", len(data))
+		log.Printf("data = %+v\n", data)
+		t.Fatal()
+	}
 	if data[0] != expected {
 		fmt.Printf("Expected %s, got %s\n)", expected, data[0])
-		t.Error()
-
+		t.Error("Expected ", expected, "got", data[0])
 	}
 }
 func Test_compare_file_elements2(t *testing.T) {
@@ -60,19 +122,24 @@ func Test_compare_file_elements2(t *testing.T) {
 func Test_compare_file_elements3(t *testing.T) {
 	a := []byte("1234 bar \n2222 nope")
 	b := []byte("1234 bar \n1345 foo\n2222 nope")
-	data, _ := compare_file_elements(a, b)
+	data, err := compare_file_elements(a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	expected := "1345"
 	if data[0] != expected {
 		fmt.Printf("Expected %s, got %s ::\n)", expected, data[0])
 		t.Error()
-
 	}
 }
 
 func Test_compare_file_many(t *testing.T) {
 	a := []byte("1234 bar \n2222 nope\n3333 nope")
 	b := []byte("1234 bar \n1345 foo\n2222 nope\n3334 yup")
-	data, _ := compare_file_elements(a, b)
+	data, err := compare_file_elements(a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
 	expected := "1345"
 	if data[0] != expected {
 		fmt.Printf("Expected %s, got %s ::\n)", expected, data[0])
@@ -135,7 +202,7 @@ func Test_compare_identical(t *testing.T) {
 	var path string
 	path, err = save_backupset_disk(files)
 	if err != nil {
-	  log.Printf("path = %+v\n", path)
+		log.Printf("path = %+v\n", path)
 		t.Fatal(err)
 	}
 }
@@ -162,3 +229,42 @@ func Test_make_filename(t *testing.T) {
 		t.Fatal("problem with the date generator")
 	}
 }
+
+func Test_runtwobackups(t *testing.T) {
+	backup := make([]HackFile, 0)
+	for i := 0; i < 3; i++ {
+		backup = append(backup,mock_file())
+	}
+	backupset := testable_make_list(backup)
+	//alter := rand.Intn(len(backup))
+	newfile := mock_file()
+	// line bellow will alter the array
+	//backup[alter] = newfile
+	backup = append(backup, newfile)
+	backupset2 := testable_make_list(backup)
+	fmt.Println("Start compare")
+	result, err := compare_string_file_elements(backupset,backupset2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		fmt.Printf("backupset = %+v\n", backupset)
+		fmt.Printf("backupset2 = %+v\n", backupset2)
+		fmt.Printf("result = %+v\n", result)
+		t.Fatal("Expected 1 file got", len(result))
+	}
+}
+
+func mock_file() HackFile {
+	pick := rand.Intn(100)
+	d := fmt.Sprintf("%d", pick)
+	name := "File-" + d + "xx"
+	return HackFile{name, "path", time.Now(), 1234, "hash"}
+}
+
+/*
+test ideas
+run one backup change files then run again
+run two backups then run the clean up
+make a loop and do it 100 times! backup and clean...
+*/
