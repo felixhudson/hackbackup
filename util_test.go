@@ -242,7 +242,55 @@ func Test_runtwobackups(t *testing.T) {
 	//backup[alter] = newfile
 	backup = append(backup, newfile)
 	backupset2 := testable_make_list(backup)
-	fmt.Println("Start compare")
+	result, err := compare_string_file_elements(backupset,backupset2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		fmt.Printf("backupset = %+v\n", backupset)
+		fmt.Printf("backupset2 = %+v\n", backupset2)
+		fmt.Printf("result = %+v\n", result)
+		t.Fatal("Expected 1 file got", len(result))
+	}
+}
+func Test_runtwobackups_sort(t *testing.T) {
+	backup := make([]HackFile, 0)
+	backup = append(backup,mock_file())
+	backupset := testable_make_list(backup)
+	last := "File"
+	for _, value := range backupset {
+		if strings.Split(" ",value)[0] > last {
+			log.Printf("backupset = %+v\n", backupset)
+			log.Printf("value = %+v\n", value)
+			log.Printf("last = %+v\n", last)
+			t.Fatal("List of length 1 is out of order?")
+		}
+	}
+	for i := 0; i < 3; i++ {
+		backup = append(backup,mock_file())
+	}
+	backupset = testable_make_list(backup)
+
+	last = "0"
+	for _, value := range backupset {
+		if strings.Split(" ",value)[0] > last {
+			log.Printf("backupset = %+v\n", backupset)
+			t.Fatal("sorted values are out of order")
+		}
+	}
+}
+
+func Test_runtwobackups_with_alter(t *testing.T) {
+	backup := make([]HackFile, 0)
+	for i := 0; i < 3; i++ {
+		backup = append(backup,mock_file())
+	}
+	backupset := testable_make_list(backup)
+	alter := rand.Intn(len(backup))
+	newfile := mock_file()
+	// line bellow will alter the array
+	backup[alter] = newfile
+	backupset2 := testable_make_list(backup)
 	result, err := compare_string_file_elements(backupset,backupset2)
 	if err != nil {
 		t.Fatal(err)
