@@ -20,7 +20,9 @@ type ByPath []HackFile
 
 func (a ByPath) Len() int           { return len(a) }
 func (a ByPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByPath) Less(i, j int) bool { return a[i].path < a[j].path }
+func (a ByPath) Less(i, j int) bool { 
+	return a[i].path+"/"+a[i].name < a[j].path+"/"+a[j].name
+}
 
 func (h *HackFile) to_s() string {
 	data := fmt.Sprintf("%s/%s %s %d %s", h.path, h.name, h.modified, h.size, h.hash)
@@ -53,6 +55,8 @@ func compare_string_file_elements(base []string, compare []string) ([]string, er
 	}
 	result, err := compare_file_elements(newbase, newcompare)
 	if err != nil {
+		log.Println("We have a problem when comparing the files")
+		log.Printf("err = %+v\n", err)
 		return make([]string, 0), err
 	}
 	return result, nil
@@ -83,6 +87,8 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 	result := make([]string, 0)
 	if debug {
 		log.Println("############")
+		log.Printf("lines1 = %+v\n", lines1)
+		log.Printf("lines2 = %+v\n", lines2)
 	}
 	for (pos2 < end2 - 1){
 		if debug {
