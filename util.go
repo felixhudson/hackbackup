@@ -49,7 +49,7 @@ func compare_string_file_elements(base []string, compare []string) ([]string, er
 		newbase = append(newbase, []byte("\n")...)
 	}
 	newcompare := make([]byte, 0)
-	for _, element := range base {
+	for _, element := range compare {
 		newcompare = append(newcompare, []byte(element)...)
 		newcompare = append(newcompare, []byte("\n")...)
 	}
@@ -67,10 +67,12 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 	// compare the first element of each file.
 	//
 	var lines1, lines2 []string
-	var d1, d2 []string
-	pos2 := 0
-	counter := 0
+	var split_line []string
 	debug := false
+	var exists bool
+	var compare_value string
+	basemap := make(map[string]string)
+
 
 	if !(bytes.Contains(base, []byte("\n")) || bytes.Contains(compare, []byte("\n"))) {
 		return make([]string, 0), errors.New("Data is malformed")
@@ -78,15 +80,42 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 
 	lines1 = strings.Split(string(base), "\n")
 	lines2 = strings.Split(string(compare), "\n")
-	if debug {
-		log.Printf("lines1 = %+v\n", strings.Join(lines1,"\n"))
-		log.Printf("lines2 = %+v\n", strings.Join(lines2,"\n"))
+	p := "foo"
+	for _, val := range(lines1) {
+		split_line = strings.Split(val, " ")
+		p = split_line[0]
+		basemap[p] = val
 	}
-	end := len(lines1)
-	end2 := len(lines2)
-	result := make([]string, 0)
 	if debug {
 		log.Println("############")
+		log.Printf("lines1 = %+v\n", strings.Join(lines1,"\n"))
+		log.Printf("lines2 = %+v\n", strings.Join(lines2,"\n"))
+		log.Printf("basemap = %+v\n", basemap)
+	}
+	result := make([]string, 0)
+	for _, val := range(lines2) {
+		split_line = strings.Split(val, " ")
+		p = split_line[0]
+		compare_value, exists = basemap[p]
+		if !exists {
+			if debug {
+				log.Println("Adding to result", compare_value)
+			}
+			// it doesnt exist in the base thus we include it
+			result = append(result, p)
+		} else {
+			if debug {
+				log.Println("Comparing", p)
+				log.Println("found", compare_value)
+			}
+		}
+	}
+	return result, nil
+	/*
+	return make([]string,0), errors.New("not a real error")
+	end := len(lines1)
+	end2 := len(lines2)
+	if debug {
 		log.Printf("lines1 = %+v\n", lines1)
 		log.Printf("lines2 = %+v\n", lines2)
 	}
@@ -182,6 +211,7 @@ func compare_file_elements(base []byte, compare []byte) ([]string, error) {
 		log.Println("end of loop compare")
 	}
 	return result, nil
+	*/
 }
 
 func run_compare(file1 string, file2 string) {

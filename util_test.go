@@ -253,8 +253,7 @@ func Test_runtwobackups(t *testing.T) {
 		fmt.Printf("backupset = %+v\n", backupset)
 		fmt.Printf("backupset2 = %+v\n", backupset2)
 		fmt.Printf("result = %+v\n", result)
-		//TODO 
-		//t.Fatal("Expected 1 file got", len(result))
+		t.Fatal("Expected 1 file got", len(result))
 	}
 }
 func Test_runtwobackups_sort(t *testing.T) {
@@ -300,21 +299,16 @@ func Test_runtwobackups_with_alter(t *testing.T) {
 	// line bellow will alter the array
 	backup[alter] = newfile
 	backupset2 := testable_make_list(backup)
-	// TODO enable this test
-	/*if strings.Compare(backupset,backupset2) == 0 {
-		t.Fatal("Backup expected to be different")
-	}
-	*/
 	result, err := compare_string_file_elements(backupset,backupset2)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(result) != 1 {
+		fmt.Println("----------------")
 		fmt.Printf("backupset = %+v\n", backupset)
 		fmt.Printf("backupset2 = %+v\n", backupset2)
 		fmt.Printf("result = %+v\n", result)
-		//TODO
-		//t.Fatal("Expected 1 file got", len(result))
+		t.Fatal("Expected 1 file got", len(result))
 	}
 }
 
